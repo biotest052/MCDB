@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="stylesheet.css" rel="stylesheet" />
+    <link rel="icon" href="/favicon.ico">
+    <title>MCSocial</title>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">🎮 MCSocial</a>
+        <ul id="navlinks" class="nav-links">
+            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="createPost.html">Create</a></li>
+        </ul>
+    </nav>
+
+    <script src="globals.js">
+    </script>
+    <script src="postBuilder.js">
+    </script>
+    <script src="postManager.js">
+    </script>
+
+    <div class="main-content">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <h1>🏠 Home Feed</h1>
+            <div id="posts">
+            </div>
+        </div>
+    </div>
+    <script>
+        mapPosts();
+    </script>
+</body>
+
+</html>

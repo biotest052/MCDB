@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="stylesheet.css" rel="stylesheet" />
+    <link rel="icon" href="/favicon.ico">
+    <title>MCSocial</title>
+    <script src="authFunctions.js"></script>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">🎮 MCSocial</a>
+        <ul id="navlinks" class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="createPost.html">Create</a></li>
+        </ul>
+    </nav>
+
+    <script src="globals.js">
+    </script>
+
+    <div class="main-content">
+        <!-- Login Page -->
+        <div id="login" class="page">
+            <h1>🔐 Login</h1>
+            <form>
+                <div class="form-group">
+                    <label for="loginEmail">Username</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <p id="errorMessage" style="margin-top: 1rem; text-align: center; color: red"></p>
+                <button type="button" class="btn" onclick="login()">Login to MCSocial</button>
+                <p style="margin-top: 1rem; text-align: center;">
+                    Don't have an account? <a href="register.html" style="color: #4CAF50;">Register
+                        here</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
