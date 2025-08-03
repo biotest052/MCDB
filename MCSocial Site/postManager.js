@@ -1,6 +1,6 @@
 async function fetchAllPosts() {
     try {
-        const req = await fetch("http://localhost:8000/query", {
+        const req = await fetch("query", {
             method: "POST",
             headers: {
                 'Authorization': getAuthToken()
@@ -47,7 +47,7 @@ async function mapPostsUserId() {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
 
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -83,7 +83,7 @@ async function mapPostsUserId() {
 async function displaySinglePost() {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -107,7 +107,7 @@ async function displaySinglePost() {
 }
 
 async function deletePost(id) {
-    const ref = await fetch("http://localhost:8000/query", {
+    const ref = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -124,7 +124,7 @@ async function deletePost(id) {
             const loadingMessage = document.getElementById(`loadingMessage${id}`);
             if (loadingMessage !== null)
                 loadingMessage.innerHTML = `Deleting associated file, please wait...`;
-            const delReq = await fetch(`http://localhost:8000/deleteFile?q=${refObj.fileId}`)
+            const delReq = await fetch(`deleteFile?q=${refObj.fileId}`)
 
             if (!delReq.ok) {
                 const reason = await delReq.text();
@@ -136,7 +136,7 @@ async function deletePost(id) {
 
         }
 
-        const req = await fetch("http://localhost:8000/query", {
+        const req = await fetch("query", {
             method: "POST",
             headers: {
                 'Authorization': getAuthToken()

@@ -73,7 +73,7 @@ async function processAndUploadFile(image) {
 }
 
 async function uploadFile(data) {
-    const req = await fetch("http://localhost:8000/upload", {
+    const req = await fetch("upload", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -102,7 +102,7 @@ async function submitQuery(username, fileType, fileLink, fileId) {
         fileId: fileId === null && fileType === undefined ? null : fileId
     }
 
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()

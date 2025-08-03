@@ -3,7 +3,7 @@ async function hydrateForm() {
     const userId = urlParams.get('id');
     const numPosts = await getNumberPosts(userId);
 
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -48,7 +48,7 @@ async function hydrateForm() {
 }
 
 async function getNumberPosts(userId) {
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()

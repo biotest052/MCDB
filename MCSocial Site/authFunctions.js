@@ -8,7 +8,7 @@ async function register() {
         return;
     }
 
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -29,10 +29,10 @@ async function register() {
         const blankProfile = {
             username: res.username,
             userDesc: "Just a friendly neighborhood Minecraft player!",
-            profilePic: "http://localhost:8000/defaultProfilePic.png"
+            profilePic: "defaultProfilePic.png"
         }
 
-        await fetch("http://localhost:8000/query", {
+        await fetch("query", {
             method: "POST",
             headers: {
                 'Authorization': res.authToken
@@ -48,7 +48,7 @@ async function login() {
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
 
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()

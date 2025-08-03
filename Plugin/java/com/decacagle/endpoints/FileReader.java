@@ -11,9 +11,9 @@ import java.util.logging.Logger;
 
 public class FileReader extends APIEndpoint {
 
-    private int fileIndex;
+    public int fileIndex;
 
-    private int indexOffset = -1;
+    public int indexOffset = -1;
 
     public FileReader(Logger logger, World world, DecaDB plugin, DataWorker worker, int fileIndex) {
         super(logger, world, plugin, worker);

@@ -4,7 +4,7 @@ async function generatePost(postObj) {
 
     let ret = `
         <div class="post">
-        <img src="${pfp !== null ? pfp : "http://localhost:8000/defaultProfilePic.png"}" class="post-avatar"/>
+        <img src="${pfp !== null ? pfp : "defaultProfilePic.png"}" class="post-avatar"/>
             <div class="post-info">    
                 <a href="profile.html?id=${postObj.userId}">
                     <h3>${postObj.author}</h3>

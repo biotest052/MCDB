@@ -1,6 +1,7 @@
 package com.decacagle.endpoints;
 
 import com.decacagle.DecaDB;
+import com.decacagle.commands.SetUrlCommand;
 import com.decacagle.data.DataUtilities;
 import com.decacagle.data.DataWorker;
 import com.sun.net.httpserver.HttpExchange;
@@ -78,7 +79,7 @@ public class UploadHandler extends APIEndpoint {
 
                 logger.info("Created new route: " + newContext);
                 exchange.getResponseHeaders().add("Content-Type", "application/json");
-                respond(exchange, 200, "{\"message\":\"Wrote file " + fileTitle + " successfully!\", \"link\": \"http://localhost:8000" + newContext + "\",\"fileId\":" + index + "}");
+                respond(exchange, 200, "{\"message\":\"Wrote file " + fileTitle + " successfully!\", \"link\": \"" + SetUrlCommand.url + newContext + "\",\"fileId\":" + index + "}");
 
 
             } else {

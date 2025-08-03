@@ -1,0 +1,11 @@
+name: MCDBFork
+version: '1.0-SNAPSHOT'
+main: com.decacagle.DecaDB
+api-version: '1.21'
+commands:
+  seturl:
+    description: Sets the URL. Useful for images not working on websites.
+    usage: /seturl "<url>"
+  readcurrentmetadata:
+    description: Reads the metadata of the current chunk youre standing on.
+    usage: /readcurrentmetadata

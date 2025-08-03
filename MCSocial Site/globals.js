@@ -2,7 +2,7 @@ async function verifyAuthToken() {
     const authToken = localStorage.getItem("mcSocialAuthToken");
     if (authToken !== undefined && authToken !== null) {
         const token = JSON.parse(authToken).authToken;
-        const req = await fetch("http://localhost:8000/query", {
+        const req = await fetch("query", {
             method: "POST",
             headers: {
                 'Authorization': getAuthToken()
@@ -76,7 +76,7 @@ function getUsername() {
 }
 
 async function getProfilePictureLink(userId) {
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -99,7 +99,7 @@ async function logOut() {
     const stored = localStorage.getItem("mcSocialAuthToken");
     if (stored !== null && stored !== undefined) {
         const obj = JSON.parse(stored);
-        const req = await fetch("http://localhost:8000/query", {
+        const req = await fetch("query", {
             method: "POST",
             headers: {
                 'Authorization': getAuthToken()

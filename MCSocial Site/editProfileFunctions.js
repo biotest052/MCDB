@@ -6,7 +6,7 @@ async function hydrateForm() {
         return;
     }
 
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -119,7 +119,7 @@ async function processAndUploadFile(image) {
 }
 
 async function uploadFile(data) {
-    const req = await fetch("http://localhost:8000/upload", {
+    const req = await fetch("upload", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -151,7 +151,7 @@ function handleImageSelect() {
 async function submitQuery(userId, newPfp) {
     const bio = document.getElementById('editBio').value;
 
-    const req = await fetch("http://localhost:8000/query", {
+    const req = await fetch("query", {
         method: "POST",
         headers: {
             'Authorization': getAuthToken()
@@ -177,7 +177,7 @@ async function submitQuery(userId, newPfp) {
                 profilePic: newPfp !== null && newPfp !== undefined ? newPfp : currentProfile.profilePic
             }
 
-            const nReq = await fetch("http://localhost:8000/query", {
+            const nReq = await fetch("query", {
                 method: "POST",
                 body: `update ${currentProfile.id} in profiles set ${JSON.stringify(newProfile)}`
             })

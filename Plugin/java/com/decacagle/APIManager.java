@@ -1,11 +1,15 @@
 package com.decacagle;
 
+import com.decacagle.commands.SetUrlCommand;
 import com.decacagle.data.DataUtilities;
 import com.decacagle.data.DataWorker;
 import com.decacagle.endpoints.*;
 import com.sun.net.httpserver.HttpServer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -16,7 +20,7 @@ public class APIManager {
     private Logger logger;
     private World world;
     private DecaDB plugin;
-    private DataWorker worker;
+    public static DataWorker worker;
 
     public APIManager(Logger logger, World world, DecaDB plugin) {
         this.logger = logger;
@@ -29,6 +33,7 @@ public class APIManager {
     public void startHTTPServer() {
         try {
             HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+            SetUrlCommand.url = "http://localhost:" + server.getAddress().getPort();
 
             server.createContext("/upload", new UploadHandler(server, logger, world, plugin, worker));
             server.createContext("/deleteFile", new DeleteFileHandler(server, logger, world, plugin, worker));
@@ -58,6 +63,23 @@ public class APIManager {
     }
 
     int indexOffset = -1;
+
+    public static String getMetadata(Player player, CommandSender sender)
+    {
+        Location loc = player.getLocation();
+        int chunkX = (int)Math.floor(loc.getX() / 16);
+        int chunkZ = (int)Math.floor(loc.getZ() / 16) + 1;
+
+        sender.sendMessage(Integer.toString(chunkX));
+        sender.sendMessage(Integer.toString(chunkZ));
+
+        String startIndex = worker.readChunk(chunkX, chunkZ, false, 1);
+
+        if (!startIndex.isEmpty())
+            return startIndex;
+
+        return "Couldnt find metadata.";
+    }
 
     public void addFileRoutes(HttpServer server) {
 
