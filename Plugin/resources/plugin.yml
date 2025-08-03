@@ -1,5 +1,5 @@
-name: MCDBFork
-version: '1.0-SNAPSHOT'
+name: MCDB
+version: '1.0'
 main: com.decacagle.DecaDB
 api-version: '1.21'
 commands:
