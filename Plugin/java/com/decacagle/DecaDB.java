@@ -1,5 +1,6 @@
 package com.decacagle;
 
+import com.decacagle.commands.OverwriteFileDataCommand;
 import com.decacagle.commands.ReadCurrentMetadataCommand;
 import com.decacagle.commands.SetUrlCommand;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,6 +21,7 @@ public class DecaDB extends JavaPlugin {
 
         getCommand("seturl").setExecutor(new SetUrlCommand());
         getCommand("readcurrentmetadata").setExecutor(new ReadCurrentMetadataCommand());
+        getCommand("overwritefiledata").setExecutor(new OverwriteFileDataCommand());
     }
 
     @Override

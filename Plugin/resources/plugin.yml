@@ -1,5 +1,5 @@
-name: MCDB
-version: '1.0'
+name: MCDBFork
+version: '1.0-SNAPSHOT'
 main: com.decacagle.DecaDB
 api-version: '1.21'
 commands:
@@ -9,3 +9,6 @@ commands:
   readcurrentmetadata:
     description: Reads the metadata of the current chunk youre standing on.
     usage: /readcurrentmetadata
+  overwritefiledata:
+    description: Overwrites the file your standing on to the file contents of the file path.
+    usage: /overwritefiledata "<path>"

@@ -13,6 +13,9 @@ import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 public class APIManager {
@@ -70,15 +73,52 @@ public class APIManager {
         int chunkX = (int)Math.floor(loc.getX() / 16);
         int chunkZ = (int)Math.floor(loc.getZ() / 16) + 1;
 
-        sender.sendMessage(Integer.toString(chunkX));
-        sender.sendMessage(Integer.toString(chunkZ));
-
         String startIndex = worker.readChunk(chunkX, chunkZ, false, 1);
 
         if (!startIndex.isEmpty())
             return startIndex;
 
         return "Couldnt find metadata.";
+    }
+
+    public static boolean writeMetadata(Player player, CommandSender sender, String base64Text, String path)
+    {
+        Location loc = player.getLocation();
+        int chunkX = (int)Math.floor(loc.getX() / 16);
+        int chunkZ = (int)Math.floor(loc.getZ() / 16) + 1;
+
+        Path filePath = Paths.get(path);
+
+        String fileName = filePath.getFileName().toString();
+        System.out.println("File name: " + fileName);
+
+        try {
+            String mimeType = Files.probeContentType(filePath);
+            System.out.println("MIME type: " + mimeType);
+
+            worker.deleteChunk(chunkX - 1, chunkZ, false, 1);
+
+            String newFileMetadata = DataUtilities.fileMetadataBuilder(fileName, mimeType, Math.abs(chunkZ + 2), Math.abs(chunkZ + 2) + 2);
+            newFileMetadata = newFileMetadata.replace("javascriptt", "javascript");
+
+            boolean written = worker.writeToChunk(newFileMetadata, chunkX - 1, chunkZ, false, 1);
+
+            if (written) {
+                worker.deleteChunk(chunkX, chunkZ, true, 1);
+
+                boolean writeFileResult = worker.writeToChunk(base64Text, chunkX, chunkZ, true, 1);
+
+                if (writeFileResult) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException e) {
+            System.err.println("Failed to determine MIME type: " + e.getMessage());
+            return false;
+        }
+
+
     }
 
     public void addFileRoutes(HttpServer server) {
