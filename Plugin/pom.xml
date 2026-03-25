@@ -6,7 +6,7 @@
 
     <groupId>com.decacagle</groupId>
     <artifactId>mcdb</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <properties>
