@@ -79,6 +79,7 @@ public class DataWorker {
         if (raw == null || raw.contains(";")) return raw;
         String[] parts = raw.split(",", 3);
         if (parts.length < 3) return raw;
+        if (!parts[2].trim().startsWith("{")) return raw;
         return parts[0] + "," + parts[1] + ";" + parts[2];
     }
 
