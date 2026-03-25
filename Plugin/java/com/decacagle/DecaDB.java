@@ -15,6 +15,8 @@ public class DecaDB extends JavaPlugin {
 
         instance = this;
 
+        saveDefaultConfig();
+
         if (httpServer == null) {
             httpServer = new APIManager(getLogger(), getServer().getWorld("world"), this);
         }
@@ -27,7 +29,10 @@ public class DecaDB extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("DecaDB v1.0 disabled successfully!");
-
         instance = null;
+    }
+
+    public String getAdminKey() {
+        return getConfig().getString("admin-key", "");
     }
 }

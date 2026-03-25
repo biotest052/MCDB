@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 
 public abstract class APIEndpoint implements HttpHandler {
 
+    protected static final int MAX_BODY_BYTES = 1024 * 1024 * 10;
+
     public Logger logger;
     public World world;
     public DecaDB plugin;
@@ -23,10 +25,7 @@ public abstract class APIEndpoint implements HttpHandler {
         this.world = world;
         this.plugin = plugin;
         this.worker = worker;
-
     }
-
-    // Helper methods (conversions and parsing)
 
     public boolean preflightCheck(HttpExchange exchange) {
         if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
@@ -43,17 +42,14 @@ public abstract class APIEndpoint implements HttpHandler {
     public void addCorsHeaders(HttpExchange exchange) {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Admin-Key");
     }
 
     public void respond(HttpExchange exchange, int status, String message) {
         try {
-
             byte[] response = message.getBytes(StandardCharsets.UTF_8);
-
             exchange.sendResponseHeaders(status, response.length);
             OutputStream os = exchange.getResponseBody();
-
             os.write(response);
             os.close();
         } catch (IOException e) {
@@ -63,10 +59,8 @@ public abstract class APIEndpoint implements HttpHandler {
 
     public void respondWithBytes(HttpExchange exchange, int status, byte[] response) {
         try {
-
             exchange.sendResponseHeaders(status, response.length);
             OutputStream os = exchange.getResponseBody();
-
             os.write(response);
             os.close();
         } catch (IOException e) {
@@ -83,29 +77,25 @@ public abstract class APIEndpoint implements HttpHandler {
     }
 
     public String parseExchangeBody(HttpExchange exchange) {
-        StringBuilder buffer = new StringBuilder(12288);
         try {
-            InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
-            BufferedReader br = new BufferedReader(isr);
-
-            int b;
-
-            while ((b = br.read()) != -1) {
-                buffer.append((char) b);
+            InputStream is = exchange.getRequestBody();
+            byte[] data = is.readNBytes(MAX_BODY_BYTES + 1);
+            if (data.length > MAX_BODY_BYTES) {
+                return null;
             }
-
-            br.close();
-            isr.close();
-        } catch (UnsupportedEncodingException e) {
-            logger.info(e.getMessage());
-            e.printStackTrace();
+            return new String(data, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            logger.info(e.getMessage());
-            e.printStackTrace();
+            logger.warning("Failed to read request body: " + e.getMessage());
+            return "";
         }
-
-        return buffer.toString();
-
     }
 
+    public boolean isAdminRequest(HttpExchange exchange) {
+        String adminKey = plugin.getAdminKey();
+        if (adminKey == null || adminKey.isEmpty()) {
+            return false;
+        }
+        String provided = exchange.getRequestHeaders().getFirst("X-Admin-Key");
+        return adminKey.equals(provided);
+    }
 }

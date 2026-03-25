@@ -10,27 +10,31 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.HexFormat;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public final class DataUtilities {
 
-    private static long authTokenLifespanDays = 7;
+    private static final long AUTH_TOKEN_LIFESPAN_DAYS = 7;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final Set<Character> VALID_FLAG_CHARS = Set.of('c', 'r', 'u', 'd', '*');
+    private static final Pattern SAFE_IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
+
+    public static boolean isSafeIdentifier(String s) {
+        return s != null && !s.isEmpty() && SAFE_IDENTIFIER_PATTERN.matcher(s).matches();
+    }
 
     public static String asciiToHex(char c) {
         return Integer.toHexString((int) (c));
     }
 
-    /**
-     * Takes hexadecimal value as a string (hex) and returns the corresponding ASCII char
-     */
     public static char hexToAscii(String hex) {
-        return ((char) (Integer.parseInt(hex, 16)));
+        return (char) Integer.parseInt(hex, 16);
     }
 
-    /**
-     * Takes char (inputC) and returns the corresponding Material for encoding or whatever
-     * Returns null if given invalid char
-     */
     public static Material getCorrespondingBlock(char inputC) {
         char c = ("" + inputC).toUpperCase().charAt(0);
         return switch (c) {
@@ -52,13 +56,8 @@ public final class DataUtilities {
             case 'F' -> Material.BLACK_WOOL;
             default -> Material.BEDROCK;
         };
-
     }
 
-    /**
-     * Takes Material (m) and returns the corresponding char for encoding or whatever
-     * Returns 'n' if given invalid Material
-     */
     public static char getCorrespondingChar(Material m) {
         return switch (m) {
             case WHITE_WOOL -> '0';
@@ -79,25 +78,31 @@ public final class DataUtilities {
             case BLACK_WOOL -> 'F';
             default -> 'n';
         };
-
     }
 
     public static boolean isWoolBlock(Material m) {
         return switch (m) {
-            case WHITE_WOOL, ORANGE_WOOL, BLACK_WOOL, RED_WOOL, GREEN_WOOL, BROWN_WOOL, BLUE_WOOL, PURPLE_WOOL,
-                 CYAN_WOOL, LIGHT_GRAY_WOOL, GRAY_WOOL, PINK_WOOL, LIME_WOOL, YELLOW_WOOL, LIGHT_BLUE_WOOL,
-                 MAGENTA_WOOL -> true;
+            case WHITE_WOOL, ORANGE_WOOL, BLACK_WOOL, RED_WOOL, GREEN_WOOL, BROWN_WOOL,
+                 BLUE_WOOL, PURPLE_WOOL, CYAN_WOOL, LIGHT_GRAY_WOOL, GRAY_WOOL, PINK_WOOL,
+                 LIME_WOOL, YELLOW_WOOL, LIGHT_BLUE_WOOL, MAGENTA_WOOL -> true;
             default -> false;
         };
-
     }
 
-    public static String addValueToJSON(int value, String key, String JSON) {
-        return "{\""+key+"\":" + value + "," + JSON.substring(1);
+    public static String addValueToJSON(int value, String key, String json) {
+        JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+        JsonObject result = new JsonObject();
+        result.addProperty(key, value);
+        obj.entrySet().forEach(e -> result.add(e.getKey(), e.getValue()));
+        return result.toString();
     }
 
-    public static String addValueToJSON(String value, String key, String JSON) {
-        return "{\""+key+"\":\"" + value + "\"," + JSON.substring(1);
+    public static String addValueToJSON(String value, String key, String json) {
+        JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+        JsonObject result = new JsonObject();
+        result.addProperty(key, value);
+        obj.entrySet().forEach(e -> result.add(e.getKey(), e.getValue()));
+        return result.toString();
     }
 
     public static int parseNextIndexTable(String metadata) {
@@ -145,91 +150,21 @@ public final class DataUtilities {
     }
 
     public static String contextNameBuilder(String fileTitle) {
-        String urlEncodedFileTitle = URLEncoder.encode(fileTitle, StandardCharsets.UTF_8);
-        return "/" + urlEncodedFileTitle;
+        return "/" + URLEncoder.encode(fileTitle, StandardCharsets.UTF_8);
     }
 
     public static boolean isValidFileMetadata(String metadata) {
-        return !metadata.isEmpty() && metadata.split(",").length == 4;
+        return metadata != null && !metadata.isEmpty() && metadata.split(",").length == 4;
     }
 
     public static boolean isValidTableMetadata(String metadata) {
-        return !metadata.isEmpty() && (metadata.split(",").length == 3 || metadata.split(",").length == 4);
+        if (metadata == null || metadata.isEmpty()) return false;
+        int parts = metadata.split(",").length;
+        return parts == 3 || parts == 4;
     }
 
-    public static String hashString(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-512");
-            byte[] messageDigest = md.digest(input.getBytes());
-
-            BigInteger no = new BigInteger(1, messageDigest);
-
-            String hashtext = no.toString(16);
-
-            while (hashtext.length() < 128) {
-                hashtext = "0" + hashtext;
-            }
-
-            return hashtext;
-        }
-
-        // For specifying wrong message digest algorithms
-        catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String userRowBuilder(String username, String password) {
-        return "{\"username\":\"" + username + "\", \"passHash\":\"" + password + "\"}";
-    }
-
-    public static String generateAuthTokenJson() {
-        double random = Math.random() * 10000;
-        String token = hashString("" + random);
-        String expiration = "" + (Instant.now().toEpochMilli() + (authTokenLifespanDays * 24 * 60 * 60 * 1000));
-        return "{\"token\":\"" + token + "\",\"expiration\":\"" + expiration + "\"}";
-    }
-
-    public static boolean meetsCondition(String content, String key, String target) {
-        JsonObject obj = JsonParser.parseString(content).getAsJsonObject();
-
-        if (obj.has(key)) {
-            String keyValue = obj.get(key).getAsString();
-            return keyValue.equals(target);
-        }
-
-        return false;
-
-    }
-
-    /**
-     * Takes an array of JSON objects as a String and returns a new list that only contains the objects where the object's key == target
-     */
-    public static MethodResponse filterJsonArray(String json, String key, String target) {
-        try {
-            JsonArray arr = JsonParser.parseString(json).getAsJsonArray();
-
-            for (int i = 0; i < arr.size(); i++) {
-                String obj = arr.get(i).getAsString();
-
-                if (!meetsCondition(obj, key, target)) {
-                    arr.remove(i);
-                    i--;
-                }
-
-            }
-
-            return new MethodResponse(200, arr.getAsString(), arr.getAsString(), false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new MethodResponse(500, "Internal Server Error: " + e.getMessage(), "[]", true);
-        }
-    }
-
-    public static boolean isExpired(String expiration) {
-        long given = Long.parseLong(expiration);
-        long now = Instant.now().toEpochMilli();
-        return given < now;
+    public static boolean tableHasProtectionFlags(String metadata) {
+        return metadata.split(",").length == 4;
     }
 
     public static String tableProtectionBuilder(String rules) {
@@ -243,69 +178,85 @@ public final class DataUtilities {
         return tableMetadataBuilder(title, last, next) + "," + protectionField;
     }
 
+    public static String hashString(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            byte[] digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
+            BigInteger no = new BigInteger(1, digest);
+            String hash = no.toString(16);
+            while (hash.length() < 128) hash = "0" + hash;
+            return hash;
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String userRowBuilder(String username, String password) {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("username", username);
+        obj.addProperty("passHash", password);
+        return obj.toString();
+    }
+
+    public static String generateAuthTokenJson() {
+        byte[] tokenBytes = new byte[32];
+        SECURE_RANDOM.nextBytes(tokenBytes);
+        String token = HexFormat.of().formatHex(tokenBytes);
+
+        String expiration = String.valueOf(
+                Instant.now().toEpochMilli() + (AUTH_TOKEN_LIFESPAN_DAYS * 24 * 60 * 60 * 1000L)
+        );
+
+        JsonObject obj = new JsonObject();
+        obj.addProperty("token", token);
+        obj.addProperty("expiration", expiration);
+        return obj.toString();
+    }
+
+    public static boolean isExpired(String expiration) {
+        long given = Long.parseLong(expiration);
+        return given < Instant.now().toEpochMilli();
+    }
+
     public static MethodResponse areValidProtectionFlags(String protection) {
-        if (protection.length() == 1) {
-            if (protection.toLowerCase().indexOf('c') == -1 && protection.toLowerCase().indexOf('r') == -1 && protection.toLowerCase().indexOf('u') == -1 && protection.toLowerCase().indexOf('d') == -1 && protection.toLowerCase().indexOf('*') == -1) {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
+        if (protection == null || protection.isEmpty() || protection.length() > 4) {
+            return new MethodResponse(400,
+                    "Bad Request: 1–4 protection flags required. Valid flags: c (create), r (read), u (update), d (delete), * (all)",
+                    null, true);
+        }
+        for (char c : protection.toLowerCase().toCharArray()) {
+            if (!VALID_FLAG_CHARS.contains(c)) {
+                return new MethodResponse(400,
+                        "Bad Request: Invalid flag '" + c + "'. Valid flags: c, r, u, d, *",
+                        null, true);
             }
-        } else if (protection.length() == 2) {
-            char char1 = protection.toLowerCase().charAt(0);
-            char char2 = protection.toLowerCase().charAt(1);
-            if (char1 != 'c' && char1 != 'r' && char1 != 'u' && char1 != 'd' && char1 != '*') {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
-            }
-            if (char2 != 'c' && char2 != 'r' && char2 != 'u' && char2 != 'd' && char2 != '*') {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
-            }
-        } else if (protection.length() == 3) {
-            char char1 = protection.toLowerCase().charAt(0);
-            char char2 = protection.toLowerCase().charAt(1);
-            char char3 = protection.toLowerCase().charAt(2);
-            if (char1 != 'c' && char1 != 'r' && char1 != 'u' && char1 != 'd' && char1 != '*') {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
-            }
-            if (char2 != 'c' && char2 != 'r' && char2 != 'u' && char2 != 'd' && char2 != '*') {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
-            }
-            if (char3 != 'c' && char3 != 'r' && char3 != 'u' && char3 != 'd' && char3 != '*') {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
-            }
-        } else if (protection.length() == 4) {
-            char char1 = protection.toLowerCase().charAt(0);
-            char char2 = protection.toLowerCase().charAt(1);
-            char char3 = protection.toLowerCase().charAt(2);
-            char char4 = protection.toLowerCase().charAt(3);
-            if (char1 != 'c' && char1 != 'r' && char1 != 'u' && char1 != 'd' && char1 != '*') {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
-            }
-            if (char2 != 'c' && char2 != 'r' && char2 != 'u' && char2 != 'd' && char2 != '*') {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
-            }
-            if (char3 != 'c' && char3 != 'r' && char3 != 'u' && char3 != 'd' && char3 != '*') {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
-            }
-            if (char4 != 'c' && char4 != 'r' && char4 != 'u' && char4 != 'd' && char4 != '*') {
-                // if given flag is not one of the three available flags
-                return new MethodResponse(400, "Bad Request: Invalid protection flags. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
-            }
-        } else {
-            // too many or too little flags given
-            return new MethodResponse(400, "Bad Request: Invalid quantity of protection flags. You can have 1 flag at minimum, and a maximum of 4. Valid flags are: C - Create access, R - Read access, U - Update access, D - Delete access, and * - All access (Create, Read, Update, and Delete)", null, true);
         }
         return new MethodResponse(200, "Flags are valid", "Flags are valid", false);
     }
 
-    public static boolean tableHasProtectionFlags(String metadata) {
-        return metadata.split(",").length == 4;
+    public static boolean meetsCondition(String content, String key, String target) {
+        try {
+            JsonObject obj = JsonParser.parseString(content).getAsJsonObject();
+            return obj.has(key) && obj.get(key).getAsString().equals(target);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
+    public static MethodResponse filterJsonArray(String json, String key, String target) {
+        try {
+            JsonArray arr = JsonParser.parseString(json).getAsJsonArray();
+            JsonArray filtered = new JsonArray();
+            for (int i = 0; i < arr.size(); i++) {
+                String obj = arr.get(i).getAsString();
+                if (meetsCondition(obj, key, target)) {
+                    filtered.add(arr.get(i));
+                }
+            }
+            return new MethodResponse(200, "OK", filtered.toString(), false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new MethodResponse(500, "Internal Server Error: " + e.getMessage(), "[]", true);
+        }
+    }
 }
