@@ -256,6 +256,11 @@ public class TableManager {
 
         int currentIndex = Integer.parseInt(startIndexText);
         String currentData = worker.readChunk(0, currentIndex + indexOffset, false, 1);
+
+        if (currentData.isEmpty() || currentData.split(",").length < 2) {
+            return currentIndex;
+        }
+
         int nextIndex = DataUtilities.parseNextIndexTable(currentData);
 
         while (nextIndex != 0) {
@@ -353,6 +358,7 @@ public class TableManager {
 
         while (currentIndex != 0) {
             String currentRow = worker.readChunk(currentIndex + indexOffset, tableIndex + indexOffset, false, 1);
+            if (currentRow.isEmpty() || !currentRow.contains(";")) break;
             int nextIndex = DataUtilities.parseNextIndexRow(currentRow);
             worker.deleteChunk(currentIndex + indexOffset, tableIndex + indexOffset, false, 1);
             currentIndex = nextIndex;

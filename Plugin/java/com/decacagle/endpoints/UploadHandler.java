@@ -96,11 +96,17 @@ public class UploadHandler extends APIEndpoint {
 
         int currentIndex = Integer.parseInt(startIndexText);
         String currentData = worker.readChunk(0, -currentIndex + indexOffset, false, 1);
+
+        if (currentData.isEmpty() || currentData.split(",").length < 2) {
+            return currentIndex;
+        }
+
         int nextIndex = DataUtilities.parseNextIndexTable(currentData);
 
         while (nextIndex != 0) {
             currentIndex = nextIndex;
             currentData = worker.readChunk(0, -currentIndex + indexOffset, false, 1);
+            if (currentData.isEmpty() || currentData.split(",").length < 2) break;
             nextIndex = DataUtilities.parseNextIndexTable(currentData);
         }
 
