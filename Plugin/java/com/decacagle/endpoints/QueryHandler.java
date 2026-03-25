@@ -38,7 +38,10 @@ public class QueryHandler extends APIEndpoint {
             return;
         }
 
-        logger.info("Received query: " + query);
+        if (query.contains("auth register") || query.contains("auth login"))
+            logger.info("Received query: " + (query.contains("auth register") ? "auth register *****" : "auth login *****"));
+        else
+            logger.info("Received query: " + query);
 
         final String finalQuery = query;
         runSynchronously(() -> parseQuery(exchange, finalQuery));
