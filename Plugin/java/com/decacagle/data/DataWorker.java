@@ -75,6 +75,13 @@ public class DataWorker {
         return true;
     }
 
+    private String migrateRowIfNeeded(String raw) {
+        if (raw == null || raw.contains(";")) return raw;
+        String[] parts = raw.split(",", 3);
+        if (parts.length < 3) return raw;
+        return parts[0] + "," + parts[1] + ";" + parts[2];
+    }
+
     public String readChunk(int xIndex, int zIndex, boolean readInfinitely, int direction) {
         int startX = xIndex * 16;
         int startZ = -1 + (zIndex * 16);
@@ -128,7 +135,7 @@ public class DataWorker {
             asciiBuilder.append(hexToAscii(hexByte));
         }
 
-        return asciiBuilder.toString();
+        return migrateRowIfNeeded(asciiBuilder.toString());
     }
 
     public void deleteChunk(int xIndex, int zIndex, boolean readInfinitely, int direction) {

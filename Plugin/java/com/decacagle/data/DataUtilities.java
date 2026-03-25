@@ -130,7 +130,11 @@ public final class DataUtilities {
     }
 
     public static String parseRowContent(String metadata) {
-        return metadata.split(";")[1];
+        String[] parts = metadata.split(";", 2);
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Malformed row metadata (no ';' separator): " + metadata);
+        }
+        return parts[1];
     }
 
     public static String parseTableProtectionFlags(String metadata) {

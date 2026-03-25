@@ -63,11 +63,17 @@ public class TableManager {
 
         int currentIndex = Integer.parseInt(startIndexText);
         String currentData = worker.readChunk(currentIndex + indexOffset, tableIndex + indexOffset, false, 1);
+
+        if (currentData.isEmpty() || !currentData.contains(";")) {
+            return currentIndex;
+        }
+
         int nextIndex = DataUtilities.parseNextIndexRow(currentData);
 
         while (nextIndex != 0) {
             currentIndex = nextIndex;
             currentData = worker.readChunk(currentIndex + indexOffset, tableIndex + indexOffset, false, 1);
+            if (currentData.isEmpty() || !currentData.contains(";")) break; // same guard in the walk
             nextIndex = DataUtilities.parseNextIndexRow(currentData);
         }
 
@@ -146,7 +152,13 @@ public class TableManager {
         int currentIndex = Integer.parseInt(tableStartIndex);
 
         while (currentIndex != 0) {
-            String currentRow = worker.readChunk(currentIndex + 1, tableIndex + 1, false, 1);
+            String currentRow = worker.readChunk(currentIndex + indexOffset, tableIndex + indexOffset, false, 1);
+
+            if (currentRow == null || currentRow.isEmpty() || !currentRow.contains(";")) {
+                logger.warning("Skipping malformed row at index " + currentIndex + ", no ';' separator found");
+                break;
+            }
+
             String content = DataUtilities.parseRowContent(currentRow);
             int nextIndex = DataUtilities.parseNextIndexRow(currentRow);
 
@@ -170,6 +182,10 @@ public class TableManager {
 
         while (currentIndex != 0) {
             String currentRow = worker.readChunk(currentIndex + indexOffset, tableIndex + indexOffset, false, 1);
+            if (currentRow == null || currentRow.isEmpty() || !currentRow.contains(";")) {
+                logger.warning("Skipping malformed row at index " + currentIndex + ", no ';' separator found");
+                break;
+            }
             String content = DataUtilities.parseRowContent(currentRow);
             int nextIndex = DataUtilities.parseNextIndexRow(currentRow);
             rows.add(content);
