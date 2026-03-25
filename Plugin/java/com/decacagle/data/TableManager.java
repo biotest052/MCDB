@@ -378,6 +378,7 @@ public class TableManager {
 
         while (currentIndex != 0) {
             String currentRow = worker.readChunk(currentIndex + indexOffset, tableIndex + indexOffset, false, 1);
+            if (currentRow.isEmpty() || !currentRow.contains(";")) break;
             int nextIndex = DataUtilities.parseNextIndexRow(currentRow);
             String content = DataUtilities.parseRowContent(currentRow);
 
