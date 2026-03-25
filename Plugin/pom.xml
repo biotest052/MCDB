@@ -36,12 +36,6 @@
             <version>2.10.1</version>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>io.github.zhong-j-yu.rekex</groupId>
-            <artifactId>rekex-parser</artifactId>
-            <version>1.0.0</version>
-        </dependency>
     </dependencies>
 
     <build>
